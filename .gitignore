@@ -1,1 +1,4 @@
-*.opensdf
+*
+!Samples/OculusRoomTiny/OculusRoomTiny\ \(DX11\)/
+Samples/OculusRoomTiny/OculusRoomTiny\ \(DX11\)/*.cpp
+Samples/OculusRoomTiny/OculusRoomTiny\ \(DX11\)/*.h
