@@ -3,6 +3,7 @@
 #define   OVR_D3D_VERSION 11
 #include "OVR_CAPI_D3D.h"
 
+/*
 struct OculusTexture
 {
 	ovrSwapTextureSet      * TextureSet;
@@ -42,9 +43,10 @@ struct OculusTexture
 	{
 		ovrHmd_DestroySwapTextureSet(hmd, TextureSet);
 	}
-};
+};*/
 
 int WINAPI WinMain(HINSTANCE hinst, HINSTANCE, LPSTR, int);
 bool Init();
 void ProcessAndRender(char* data);
+//void ProcessAndRender(char* leftEyeImage, char* rightEyeImage);
 void Release();

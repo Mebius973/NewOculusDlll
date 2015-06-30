@@ -114,7 +114,7 @@ struct DirectX11
             p->Running = false;
             break;
         default:
-            return DefWindowProcW(hWnd, Msg, wParam, lParam); 
+            return DefWindowProcW(hWnd, Msg, wParam, lParam);
         }
 
         if ((p->Key['Q'] && p->Key[VK_CONTROL]) || p->Key[VK_ESCAPE])
@@ -236,8 +236,8 @@ struct DirectX11
 
         // This is to provide a means to terminate after a maximum number of frames
         // to facilitate automated testing
-        #ifdef MAX_FRAMES_ACTIVE 
-            if (--maxFrames <= 0) 
+        #ifdef MAX_FRAMES_ACTIVE
+            if (--maxFrames <= 0)
                 Running = false;
         #endif
 
@@ -402,7 +402,7 @@ struct Material
 
 //----------------------------------------------------------------------
 struct Vertex
-{ 
+{
     Vector3f  Pos;
     DWORD     C;
     float     U, V;
@@ -423,8 +423,8 @@ struct TriangleSet
     {
         int n = numVertices;
         AddVertex(v0);    AddVertex(v1);    AddVertex(v2); AddVertex(v3);
-        AddIndex(n+0);    AddIndex(n+1);    AddIndex(n+2); AddIndex(n+3); 
-        AddIndex(n+2);    AddIndex(n+1); 
+        AddIndex(n+0);    AddIndex(n+1);    AddIndex(n+2); AddIndex(n+3);
+        AddIndex(n+2);    AddIndex(n+1);
     }
     void AddSolidColorBox(float x1, float y1, float z1, float x2, float y2, float z2, DWORD c)
     {
@@ -456,7 +456,7 @@ struct TriangleSet
             float dist2 = (vvv.Pos - Vector3f( 3, 4, -3)).Length();
             float dist3 = (vvv.Pos - Vector3f(-4, 3, 25)).Length();
             int   bri = rand() % 160;
-            float R = ((c >> 16) & 0xff) * (bri + 192.0f*(0.65f + 8 / dist1 + 1 / dist2 + 4 / dist3)) / 255.0f; 
+            float R = ((c >> 16) & 0xff) * (bri + 192.0f*(0.65f + 8 / dist1 + 1 / dist2 + 4 / dist3)) / 255.0f;
             float G = ((c >>  8) & 0xff) * (bri + 192.0f*(0.65f + 8 / dist1 + 1 / dist2 + 4 / dist3)) / 255.0f;
             float B = ((c >>  0) & 0xff) * (bri + 192.0f*(0.65f + 8 / dist1 + 1 / dist2 + 4 / dist3)) / 255.0f;
             vvv.C = (c & 0xff000000) + ((R>255?255:(DWORD)R)<<16) + ((G>255?255:(DWORD)G)<<8) + (B>255?255:(DWORD)B);
@@ -466,7 +466,7 @@ struct TriangleSet
 };
 
 //----------------------------------------------------------------------
-struct Model 
+struct Model
 {
     Vector3f     Pos;
     Quatf        Rot;
@@ -486,12 +486,12 @@ struct Model
    {
         Matrix4f modelMat = Matrix4f::Translation(Pos) * Matrix4f(Rot);
         Matrix4f mat = (projView * modelMat).Transposed();
-        float col[] = {R,G,B,A};  
+        float col[] = {R,G,B,A};
         if (standardUniforms) memcpy(DIRECTX.UniformData + 0,  &mat, 64); // ProjView
         if (standardUniforms) memcpy(DIRECTX.UniformData + 64, &col, 16); // MasterCol
         D3D11_MAPPED_SUBRESOURCE map;
         DIRECTX.Context->Map(DIRECTX.UniformBufferGen->D3DBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &map);
-        memcpy(map.pData,  &DIRECTX.UniformData, UNIFORM_DATA_SIZE); 
+        memcpy(map.pData,  &DIRECTX.UniformData, UNIFORM_DATA_SIZE);
         DIRECTX.Context->Unmap(DIRECTX.UniformBufferGen->D3DBuffer, 0);
         DIRECTX.Context->IASetInputLayout(Fill->InputLayout);
         DIRECTX.Context->IASetIndexBuffer(IndexBuffer->D3DBuffer, DXGI_FORMAT_R16_UINT, 0);
@@ -518,23 +518,23 @@ struct Model
     }
 };
 
-//------------------------------------------------------------------------- 
-struct Scene  
+//-------------------------------------------------------------------------
+struct Scene
 {
     int     num_models;
     Model * Models[10];
 
     void    Add(Model * n)
-    {    Models[num_models++] = n; }    
+    {    Models[num_models++] = n; }
 
     void Render(Matrix4f projView, float R, float G, float B, float A, bool standardUniforms)
     {      for (int i = 0; i < num_models; i++) Models[i]->Render(projView,R,G,B,A,standardUniforms);    }
 
-    Scene() : num_models(0) 
+    Scene() : num_models(0)
     {
         TriangleSet cube;
         cube.AddSolidColorBox(-0.5f, -0.5f, -0.5f, +0.5f, +0.5f, 0.5f, 0xff404040);
-        Add(new Model(&cube,Vector3f(0, 0, 0), new Material(new Texture(false, Sizei(256, 256), Texture::AUTO_CEILING)))); 
+        Add(new Model(&cube,Vector3f(0, 0, 0), new Material(new Texture(false, Sizei(256, 256), Texture::AUTO_CEILING))));
 
         TriangleSet spareCube;
         spareCube.AddSolidColorBox(-0.1f, -0.1f, -0.1f, +0.1f, +0.1f, 0.1f, 0xffff0000);
@@ -560,15 +560,15 @@ struct Scene
         furniture.AddSolidColorBox(9.5f, 0.95f, 3.7f, 10.1f, 2.75f, 3.8f, 0xff383838);   // Right side shelf
         furniture.AddSolidColorBox(9.55f, 1.20f, 2.5f, 10.1f, 1.30f, 3.75f, 0xff383838); // Right side shelf// Horizontals
         furniture.AddSolidColorBox(9.55f, 2.00f, 3.05f, 10.1f, 2.10f, 4.2f, 0xff383838); // Right side shelf
-        furniture.AddSolidColorBox(5.0f, 1.1f, 20.0f, 10.0f, 1.2f, 20.1f, 0xff383838);   // Right railing   
-        furniture.AddSolidColorBox(-10.0f, 1.1f, 20.0f, -5.0f, 1.2f, 20.1f, 0xff383838);   // Left railing  
+        furniture.AddSolidColorBox(5.0f, 1.1f, 20.0f, 10.0f, 1.2f, 20.1f, 0xff383838);   // Right railing
+        furniture.AddSolidColorBox(-10.0f, 1.1f, 20.0f, -5.0f, 1.2f, 20.1f, 0xff383838);   // Left railing
         for (float f=5;f<=9;f+=1) furniture.AddSolidColorBox(f, 0.0f, 20.0f, f + 0.1f, 1.1f, 20.1f, 0xff505050);// Left Bars
         for (float f=5;f<=9;f+=1) furniture.AddSolidColorBox(-f, 1.1f, 20.0f, -f - 0.1f, 0.0f, 20.1f, 0xff505050);// Right Bars
         furniture.AddSolidColorBox(-1.8f, 0.8f, 1.0f, 0.0f, 0.7f, 0.0f, 0xff505000);  // Table
-        furniture.AddSolidColorBox(-1.8f, 0.0f, 0.0f, -1.7f, 0.7f, 0.1f, 0xff505000); // Table Leg 
-        furniture.AddSolidColorBox(-1.8f, 0.7f, 1.0f, -1.7f, 0.0f, 0.9f, 0xff505000); // Table Leg 
-        furniture.AddSolidColorBox(0.0f, 0.0f, 1.0f, -0.1f, 0.7f, 0.9f, 0xff505000);  // Table Leg 
-        furniture.AddSolidColorBox(0.0f, 0.7f, 0.0f, -0.1f, 0.0f, 0.1f, 0xff505000);  // Table Leg 
+        furniture.AddSolidColorBox(-1.8f, 0.0f, 0.0f, -1.7f, 0.7f, 0.1f, 0xff505000); // Table Leg
+        furniture.AddSolidColorBox(-1.8f, 0.7f, 1.0f, -1.7f, 0.0f, 0.9f, 0xff505000); // Table Leg
+        furniture.AddSolidColorBox(0.0f, 0.0f, 1.0f, -0.1f, 0.7f, 0.9f, 0xff505000);  // Table Leg
+        furniture.AddSolidColorBox(0.0f, 0.7f, 0.0f, -0.1f, 0.0f, 0.1f, 0xff505000);  // Table Leg
         furniture.AddSolidColorBox(-1.4f, 0.5f, -1.1f, -0.8f, 0.55f, -0.5f, 0xff202050);  // Chair Set
         furniture.AddSolidColorBox(-1.4f, 0.0f, -1.1f, -1.34f, 1.0f, -1.04f, 0xff202050); // Chair Leg 1
         furniture.AddSolidColorBox(-1.4f, 0.5f, -0.5f, -1.34f, 0.0f, -0.56f, 0xff202050); // Chair Leg 2
@@ -588,7 +588,7 @@ struct Camera
     Camera() { };
     Camera(Vector3f pos, Matrix4f rot) : Pos(pos), Rot(rot) { };
     Matrix4f GetViewMatrix()
-    {    
+    {
         Vector3f finalUp      = Rot.Transform(Vector3f(0, 1, 0));
         Vector3f finalForward = Rot.Transform(Vector3f(0, 0, -1));
         return(Matrix4f::LookAtRH(Pos, Pos + finalForward, finalUp));
