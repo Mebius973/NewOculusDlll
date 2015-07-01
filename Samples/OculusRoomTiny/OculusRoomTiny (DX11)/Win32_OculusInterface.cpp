@@ -3,7 +3,7 @@
 // Include main
 #include "Win32_OculusMain.h"
 #include "Win32_OculusInterface.h"
-/*
+
 // Set of file-wide variables
 extern HINSTANCE hInstance;
 extern ovrHmd	hmd;
@@ -11,13 +11,12 @@ extern OculusTexture  * pEyeRenderTexture[2];
 int eyeGap = 8;
 bool	initDone = false;
 float positionOculus[6];
-*/
 
 extern "C"
 {
   __declspec(dllexport) bool birth()
   {
-    /*if (initDone) {
+    if (initDone) {
       return true;
     }
     auto initSuccess = Init();
@@ -29,8 +28,7 @@ extern "C"
         ovrTrackingCap_Position, 0);
     }
 
-    return initSuccess;*/
-    return true;
+    return initSuccess;
   }
 
   __declspec(dllexport) void process(char* data){
@@ -48,19 +46,17 @@ extern "C"
 
   // The API provides one eye texture size, to get the image full size, we need to calculate it
   __declspec(dllexport) int getImageHeight(){
-   /*auto imgageHeight = pEyeRenderTexture[0]->Height + eyeGap + pEyeRenderTexture[1]->Height;
-    return imgageHeight ;*/
-    return 0;
+    auto imgageHeight = pEyeRenderTexture[0]->Height + eyeGap + pEyeRenderTexture[1]->Height;
+    return imgageHeight ;
   }
 
   __declspec(dllexport) int getImageWidth(){
-    /*auto imgageWidth = pEyeRenderTexture[0]->Width + eyeGap + pEyeRenderTexture[1]->Width;
-    return imgageWidth ;*/
-    return 0;
+    auto imgageWidth = pEyeRenderTexture[0]->Width + eyeGap + pEyeRenderTexture[1]->Width;
+    return imgageWidth ;
   }
 
   __declspec(dllexport) float* getTracker(){
-    /*auto ts = ovrHmd_GetTrackingState(hmd, ovr_GetTimeInSeconds());
+    auto ts = ovrHmd_GetTrackingState(hmd, ovr_GetTimeInSeconds());
 
     Posef pose = ts.HeadPose.ThePose;
     Quatf PoseOrientation = ts.HeadPose.ThePose.Orientation;
@@ -69,8 +65,6 @@ extern "C"
     positionOculus[4] = -ts.HeadPose.ThePose.Position.x;
     positionOculus[5] = ts.HeadPose.ThePose.Position.y;
 
-    return positionOculus;*/
-    float a = 0;
-    return &a;
+    return positionOculus;
   }
 }

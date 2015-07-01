@@ -1,22 +1,27 @@
 #include "Win32_OculusMain.h"
+
 /*
 //------------------------------------------------------------
 // ovrSwapTextureSet wrapper class that also maintains the render target views
 // needed for D3D11 rendering.
 
 
-// get the app hinstance
+// get the app hinstance */
 HINSTANCE hInstance;
-// Create the hmd
+/*
+// Create the hmd */
 ovrHmd	hmd;
-// Create the eye render texture set
+/*
+// Create the eye render texture set */
 OculusTexture  * pEyeRenderTexture[2];
 
 // required global variables
 // Create the camera
 Camera mainCam;
+
 // Create the room model
-Scene roomScene;
+// The following statement causes the dll to not be loaded
+// Scene roomScene;
 // Create the eye renderer
 DepthBuffer    * pEyeDepthBuffer[2];
 ovrRecti         eyeRenderViewport[2];
@@ -26,42 +31,9 @@ ovrTexture*          mirrorTexture;
 // Set the default visibility
 auto isVisible = true;
 
-// User inputs
-bool                Quit = 0;
-uint8_t             MoveForward = 0,
-										MoveBack = 0,
-										MoveLeft = 0,
-										MoveRight = 0;
-
-bool                ShiftDown = false,
-										ControlDown = false;
-										*/
-
 int WINAPI WinMain(HINSTANCE hinst, HINSTANCE, LPSTR, int)
 {
-	/*hInstance = hinst;
-	if (!Init())
-	{
-		// Processes messages and calls OnIdle() to do rendering.
-		while (!Quit)
-		{
-			MSG msg;
-			if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
-			{
-				TranslateMessage(&msg);
-				DispatchMessage(&msg);
-			}
-			else
-			{
-				char* data = new char[pRendertargetTexture->Width * pRendertargetTexture->Height * 4];
-				ProcessAndRender(data);
-				delete[] data;
-				// Keep sleeping when we're minimized.
-				if (IsIconic(hWnd)) Sleep(10);
-			}
-		}
-	}
-	Release();*/
+	hInstance = hinst;
 	return 0;
 }
 
@@ -70,7 +42,7 @@ int WINAPI WinMain(HINSTANCE hinst, HINSTANCE, LPSTR, int)
 // This is something that should be dropped.
 
 bool Init()
-{/*
+{
 	// Initializes LibOVR, and the Rift
 	auto result = ovr_Initialize(nullptr);
 	VALIDATE(result == ovrSuccess, "Failed to initialize libOVR.");
@@ -122,20 +94,20 @@ bool Init()
 	// Setup VR components, filling out description
 	eyeRenderDesc[0] = ovrHmd_GetRenderDesc(hmd, ovrEye_Left, hmd->DefaultEyeFov[0]);
 	eyeRenderDesc[1] = ovrHmd_GetRenderDesc(hmd, ovrEye_Right, hmd->DefaultEyeFov[1]);
-*/
+
 	return true;
 }
 
 //void ProcessAndRender(char* leftEyeImage, char* rightEyeImage)
 void ProcessAndRender(char* data)
-{/*
+{
 	while (DIRECTX.HandleMessages())
 	{
 		AddHmdCameraControl(hmd, mainCam);
 
 		// Animate the cube
 		static float cubeClock = 0;
-		roomScene.Models[0]->Pos = Vector3f(9 * sin(cubeClock), 3, 9 * cos(cubeClock+=0.015f));
+		//roomScene.Models[0]->Pos = Vector3f(9 * sin(cubeClock), 3, 9 * cos(cubeClock+=0.015f));
 
 		// Get both eye poses simultaneously, with IPD offset already included.
 		ovrPosef         EyeRenderPose[2];
@@ -165,7 +137,7 @@ void ProcessAndRender(char* data)
 				Matrix4f proj = ovrMatrix4f_Projection(eyeRenderDesc[eye].Fov, 0.2f, 1000.0f, ovrProjection_RightHanded);
 
 				// Render the scene
-				roomScene.Render(proj*view, 1, 1, 1, 1, true);
+				//roomScene.Render(proj*view, 1, 1, 1, 1, true);
 			}
 		}
 
@@ -190,16 +162,15 @@ void ProcessAndRender(char* data)
 		auto tex = reinterpret_cast<ovrD3D11Texture*>(mirrorTexture);
 		DIRECTX.Context->CopyResource(DIRECTX.BackBuffer, tex->D3D11.pTexture);
 		DIRECTX.SwapChain->Present(0, 0);
-	}*/
+	}
 }
 
 void Release()
-{/*
+{
 	ovrHmd_DestroyMirrorTexture(hmd, mirrorTexture);
 	pEyeRenderTexture[0]->Release(hmd);
 	pEyeRenderTexture[1]->Release(hmd);
 	ovrHmd_Destroy(hmd);
 	ovr_Shutdown();
 	DIRECTX.ReleaseWindow(hInstance);
-	*/
 }
