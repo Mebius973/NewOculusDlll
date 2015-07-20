@@ -49,3 +49,5 @@ bool Init();
 void ProcessAndRender(char* data);
 //void ProcessAndRender(char* leftEyeImage, char* rightEyeImage);
 void Release();
+int ImageHeight();
+int ImageWidth();

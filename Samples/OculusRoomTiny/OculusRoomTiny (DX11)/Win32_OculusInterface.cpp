@@ -5,13 +5,9 @@
 #include "Win32_OculusInterface.h"
 
 // Set of file-wide variables
-extern HINSTANCE hInstance;
 extern ovrHmd	hmd;
-extern OculusTexture  * pEyeRenderTexture[2];
-int eyeGap = 8;
 bool	initDone = false;
 float positionOculus[6];
-
 extern "C"
 {
   __declspec(dllexport) bool birth()
@@ -46,25 +42,24 @@ extern "C"
 
   // The API provides one eye texture size, to get the image full size, we need to calculate it
   __declspec(dllexport) int getImageHeight(){
-    auto imgageHeight = pEyeRenderTexture[0]->Height + eyeGap + pEyeRenderTexture[1]->Height;
-    return imgageHeight ;
+    //printf("pEyeRenderTexture[0]->Height: %d", pEyeRenderTexture[0]->Height);
+    return ImageHeight();
   }
 
   __declspec(dllexport) int getImageWidth(){
-    auto imgageWidth = pEyeRenderTexture[0]->Width + eyeGap + pEyeRenderTexture[1]->Width;
-    return imgageWidth ;
+    return ImageWidth();
   }
 
   __declspec(dllexport) float* getTracker(){
-    auto ts = ovrHmd_GetTrackingState(hmd, ovr_GetTimeInSeconds());
+  ovrTrackingState ts = ovrHmd_GetTrackingState(hmd, ovr_GetTimeInSeconds());
 
-    Posef pose = ts.HeadPose.ThePose;
-    Quatf PoseOrientation = ts.HeadPose.ThePose.Orientation;
-    PoseOrientation.GetEulerAngles<Axis_Y, Axis_X, Axis_Z>(&positionOculus[2], &positionOculus[1], &positionOculus[0]);
-    positionOculus[3] = -ts.HeadPose.ThePose.Position.z;
-    positionOculus[4] = -ts.HeadPose.ThePose.Position.x;
-    positionOculus[5] = ts.HeadPose.ThePose.Position.y;
+  Posef pose = ts.HeadPose.ThePose;
+  Quatf PoseOrientation = ts.HeadPose.ThePose.Orientation;
+  PoseOrientation.GetEulerAngles<Axis_Y, Axis_X, Axis_Z>(&positionOculus[2], &positionOculus[1], &positionOculus[0]);
+  positionOculus[3] = -ts.HeadPose.ThePose.Position.z;
+  positionOculus[4] = -ts.HeadPose.ThePose.Position.x;
+  positionOculus[5] = ts.HeadPose.ThePose.Position.y;
 
-    return positionOculus;
+  return positionOculus;
   }
 }
