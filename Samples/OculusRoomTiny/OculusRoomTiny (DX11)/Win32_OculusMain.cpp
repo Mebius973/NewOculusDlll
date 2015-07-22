@@ -33,6 +33,7 @@ ovrTexture*          mirrorTexture;
 auto isVisible = false;
 bool Quit = false;
 int eyeGap = 8;
+Sizei idealSize;
 
 // This function is the main function automatically called by windows.
 int WINAPI WinMain(HINSTANCE hinst, HINSTANCE, LPSTR, int)
@@ -96,7 +97,7 @@ bool Init()
 
   for (auto eye = 0; eye < 2; eye++)
   {
-    Sizei idealSize = ovrHmd_GetFovTextureSize(hmd, static_cast<ovrEyeType>(eye), hmd->DefaultEyeFov[eye], 1.0f);
+    idealSize = ovrHmd_GetFovTextureSize(hmd, static_cast<ovrEyeType>(eye), hmd->DefaultEyeFov[eye], 1.0f);
     pEyeRenderTexture[eye]      = new OculusTexture(hmd, idealSize);
     pEyeDepthBuffer[eye]        = new DepthBuffer(DIRECTX.Device, idealSize);
     eyeRenderViewport[eye].Pos  = Vector2i(0, 0);
@@ -154,7 +155,9 @@ void ProcessAndRender(char* data)
 
       // Clear and set up rendertarget
       auto texIndex = pEyeRenderTexture[eye]->TextureSet->CurrentIndex;
-      DIRECTX.SetAndClearRenderTarget(pEyeRenderTexture[eye]->TexRtv[texIndex], pEyeDepthBuffer[eye]);
+      auto tex = reinterpret_cast<ovrD3D11Texture*>(&pEyeRenderTexture[eye]->TextureSet->Textures[texIndex]);
+      DIRECTX.Context->UpdateSubresource(tex->D3D11.pTexture, 0, NULL, data, idealSize.w * 4, idealSize.w * idealSize.h * 4);
+      //DIRECTX.SetAndClearRenderTarget(pEyeRenderTexture[eye]->TexRtv[texIndex], pEyeDepthBuffer[eye]);
       DIRECTX.SetViewport(Recti(eyeRenderViewport[eye]));
 
       // Get view and projection matrices for the Rift camera
