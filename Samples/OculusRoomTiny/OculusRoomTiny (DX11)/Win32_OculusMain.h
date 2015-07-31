@@ -12,19 +12,19 @@ struct OculusTexture
 	OculusTexture(ovrHmd hmd, Sizei size)
 	{
 		D3D11_TEXTURE2D_DESC dsDesc;
-		dsDesc.Width            = size.w;
-		dsDesc.Height           = size.h;
-		Width					= size.w;
-		Height					= size.h;
-		dsDesc.MipLevels        = 1;
-		dsDesc.ArraySize        = 1;
-		dsDesc.Format           = DXGI_FORMAT_B8G8R8A8_UNORM;
-		dsDesc.SampleDesc.Count = 1;   // No multi-sampling allowed
+		dsDesc.Width            	= size.w;
+		dsDesc.Height           	= size.h;
+		Width					          	= size.w;
+		Height					        	= size.h;
+		dsDesc.MipLevels        	= 1;
+		dsDesc.ArraySize        	= 1;
+		dsDesc.Format           	= DXGI_FORMAT_R8G8B8A8_TYPELESS; //DXGI_FORMAT_B8G8R8A8_UNORM;
+		dsDesc.SampleDesc.Count 	= 1;   // No multi-sampling allowed
 		dsDesc.SampleDesc.Quality = 0;
-		dsDesc.Usage            = D3D11_USAGE_DEFAULT;
-		dsDesc.CPUAccessFlags   = 0;
-		dsDesc.MiscFlags        = 0;
-		dsDesc.BindFlags        = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+		dsDesc.Usage            	= D3D11_USAGE_DEFAULT;
+		dsDesc.CPUAccessFlags   	= 0;
+		dsDesc.MiscFlags        	= 0;
+		dsDesc.BindFlags        	= D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
 
 		ovrHmd_CreateSwapTextureSetD3D11(hmd, DIRECTX.Device, &dsDesc, &TextureSet);
 		for (auto i = 0; i < TextureSet->TextureCount; ++i)
