@@ -14,7 +14,7 @@ HINSTANCE hInstance;
 ovrHmd	hmd;
 /*
 // Create the eye render texture set */
-OculusTexture  * pEyeRenderTexture;
+OculusTexture  * pEyeRenderTexture[2];
 
 // required global variables
 // Create the camera
@@ -23,8 +23,7 @@ Camera mainCam;
 // The following statement causes the dll to not be loaded
 // Scene roomScene;
 // Create the eye renderer
-DepthBuffer    * pEyeDepthBuffer;
-ovrRecti         eyeRenderViewport;
+ovrRecti         eyeRenderViewport[2];
 ovrEyeRenderDesc eyeRenderDesc[2];
 
 // Mirror image to display on the computer
@@ -53,7 +52,7 @@ int WINAPI WinMain(HINSTANCE hinst, HINSTANCE, LPSTR, int)
       }
       else
       {
-        
+
         // Keep sleeping when we're minimized.
         if (IsIconic(hWnd)) Sleep(10);
       }
@@ -91,16 +90,18 @@ bool Init()
 
   // Make the eye render buffers (caution if actual size < requested due to HW limits).
 
-    idealSize.w = 2360;
+    idealSize.w = 1180;
     idealSize.h = 1460;
-    pEyeRenderTexture      = new OculusTexture(hmd, idealSize);
-    pEyeDepthBuffer        = new DepthBuffer(DIRECTX.Device, idealSize);
-    eyeRenderViewport.Pos  = Vector2i(0, 0);
-    eyeRenderViewport.Size = idealSize;
+    pEyeRenderTexture[0]   = new OculusTexture(hmd, idealSize);
+    pEyeRenderTexture[1]   = new OculusTexture(hmd, idealSize);
+    eyeRenderViewport[0].Pos  = Vector2i(0, 0);
+    eyeRenderViewport[0].Size = idealSize;
+    eyeRenderViewport[1].Pos  = Vector2i(0, 0);
+    eyeRenderViewport[1].Size = idealSize;
 
   // Create a mirror to see on the monitor.
   mirrorTexture = nullptr;
-  D3D11_TEXTURE2D_DESC td = { }; 
+  D3D11_TEXTURE2D_DESC td = { };
   td.Format           = DXGI_FORMAT_B8G8R8A8_UNORM;
   td.Width            = DIRECTX.WinSize.w;
   td.Height           = DIRECTX.WinSize.h;
@@ -119,8 +120,8 @@ bool Init()
   return true;
 }
 
-//void ProcessAndRender(char* leftEyeImage, char* rightEyeImage)
-void ProcessAndRender(char* data)
+void ProcessAndRender(char* leftEyeImage, char* rightEyeImage)
+//void ProcessAndRender(char* data)
 {
   // Create the room model
   Scene roomScene;
@@ -140,56 +141,41 @@ void ProcessAndRender(char* data)
   if (isVisible)
   {
     // Render Scene to Eye Buffers
-   
+   for (auto eye = 0; eye < 2; eye++)
+   {
       // Increment to use next texture, just before writing
-      pEyeRenderTexture->AdvanceToNextTexture();
+      pEyeRenderTexture[eye]->AdvanceToNextTexture();
 
       // Clear and set up rendertarget
-      auto texIndex = pEyeRenderTexture->TextureSet->CurrentIndex;
-      auto tex = reinterpret_cast<ovrD3D11Texture*>(&pEyeRenderTexture->TextureSet->Textures[texIndex]);
-      DIRECTX.Context->UpdateSubresource(tex->D3D11.pTexture, 0, NULL, data, idealSize.w * 4, idealSize.w * idealSize.h * 4);
-      //DIRECTX.SetAndClearRenderTarget(pEyeRenderTexture[eye]->TexRtv[texIndex], pEyeDepthBuffer[eye]);
-      /*DIRECTX.SetViewport(Recti(eyeRenderViewport[eye]));
-
-      // Get view and projection matrices for the Rift camera
-      Camera finalCam(mainCam.Pos + mainCam.Rot.Transform(EyeRenderPose[eye].Position),
-        mainCam.Rot * Matrix4f(EyeRenderPose[eye].Orientation));
-      auto view = finalCam.GetViewMatrix();
-      Matrix4f proj = ovrMatrix4f_Projection(eyeRenderDesc[eye].Fov, 0.2f, 1000.0f, ovrProjection_RightHanded);
-
-      // Render the scene
-      roomScene.Render(proj*view, 1, 1, 1, 1, true);*/
-    
+      auto texIndex = pEyeRenderTexture[eye]->TextureSet->CurrentIndex;
+      auto tex = reinterpret_cast<ovrD3D11Texture*>(&pEyeRenderTexture[eye]->TextureSet->Textures[texIndex]);
+      DIRECTX.Context->UpdateSubresource(tex->D3D11.pTexture, 0, NULL, (eye == 0 ? leftEyeImage : rightEyeImage), idealSize.w * 4, idealSize.w * idealSize.h * 4);
+   }
   }
 
   // Initialize our single full screen Fov layer.
   ovrLayerEyeFovDepth ld;
   ld.Header.Type  = ovrLayerType_EyeFov;
   ld.Header.Flags = 0;
-  
+
   for (auto eye = 0; eye < 2; eye++)
   {
-    ld.ColorTexture[eye] = pEyeRenderTexture->TextureSet;
-    ld.Viewport[eye]     = eyeRenderViewport;
+    ld.ColorTexture[eye] = pEyeRenderTexture[eye]->TextureSet;
+    ld.Viewport[eye]     = eyeRenderViewport[eye];
     ld.Fov[eye]          = hmd->DefaultEyeFov[eye];
     ld.RenderPose[eye]   = EyeRenderPose[eye];
   }
 
   auto layers = &ld.Header;
   auto result = ovrHmd_SubmitFrame(hmd, 0, nullptr, &layers, 1);
-  isVisible = result == ovrSuccess;
-
-  // Render mirror
-  auto tex = reinterpret_cast<ovrD3D11Texture*>(mirrorTexture);
-  DIRECTX.Context->CopyResource(DIRECTX.BackBuffer, tex->D3D11.pTexture);
-  DIRECTX.SwapChain->Present(0, 0);
+  isVisible = OVR_SUCCESS(result);
 }
 
 void Release()
 {
   ovrHmd_DestroyMirrorTexture(hmd, mirrorTexture);
- /* pEyeRenderTexture[0]->Release(hmd);
-  pEyeRenderTexture[1]->Release(hmd);*/
+  pEyeRenderTexture[0]->Release(hmd);
+  pEyeRenderTexture[1]->Release(hmd);
   ovrHmd_Destroy(hmd);
   ovr_Shutdown();
   DIRECTX.ReleaseWindow(hInstance);
@@ -197,10 +183,10 @@ void Release()
 
 int ImageHeight()
 {
-  return pEyeRenderTexture->Height ;
+  return pEyeRenderTexture[0]->Height ;
 }
 
 int ImageWidth()
 {
-  return pEyeRenderTexture->Width ;
+  return pEyeRenderTexture[0]->Width * 2 ;
 }

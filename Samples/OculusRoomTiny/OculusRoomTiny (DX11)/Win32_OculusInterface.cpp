@@ -26,15 +26,16 @@ extern "C"
 
     return initSuccess;
   }
-
+  /*
   __declspec(dllexport) void process(char* data){
     ProcessAndRender(data);
   }
-  /*
+  */
+  
   __declspec(dllexport) void process(char* leftEyeImage, char* rightEyeImage){
   ProcessAndRender(leftEyeImage, rightEyeImage);
   }
-  */
+  
 
   __declspec(dllexport) void death(){
     Release();

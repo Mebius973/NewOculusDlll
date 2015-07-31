@@ -46,8 +46,8 @@ struct OculusTexture
 
 int WINAPI WinMain(HINSTANCE hinst, HINSTANCE, LPSTR, int);
 bool Init();
-void ProcessAndRender(char* data);
-//void ProcessAndRender(char* leftEyeImage, char* rightEyeImage);
+//void ProcessAndRender(char* data);
+void ProcessAndRender(char* leftEyeImage, char* rightEyeImage);
 void Release();
 int ImageHeight();
 int ImageWidth();
