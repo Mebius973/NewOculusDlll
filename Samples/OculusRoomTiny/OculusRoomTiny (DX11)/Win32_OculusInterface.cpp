@@ -8,6 +8,7 @@
 extern ovrHmd	hmd;
 bool	initDone = false;
 float positionOculus[6];
+
 extern "C"
 {
   __declspec(dllexport) bool birth()
@@ -26,12 +27,7 @@ extern "C"
 
     return initSuccess;
   }
-  /*
-  __declspec(dllexport) void process(char* data){
-    ProcessAndRender(data);
-  }
-  */
-  
+
   __declspec(dllexport) void process(char* leftEyeImage, char* rightEyeImage){
   ProcessAndRender(leftEyeImage, rightEyeImage);
   }
@@ -43,7 +39,6 @@ extern "C"
 
   // The API provides one eye texture size, to get the image full size, we need to calculate it
   __declspec(dllexport) int getImageHeight(){
-    //printf("pEyeRenderTexture[0]->Height: %d", pEyeRenderTexture[0]->Height);
     return ImageHeight();
   }
 
@@ -53,8 +48,6 @@ extern "C"
 
   __declspec(dllexport) float* getTracker(){
   ovrTrackingState ts = ovrHmd_GetTrackingState(hmd, ovr_GetTimeInSeconds());
-
-  Posef pose = ts.HeadPose.ThePose;
   Quatf PoseOrientation = ts.HeadPose.ThePose.Orientation;
   PoseOrientation.GetEulerAngles<Axis_Y, Axis_X, Axis_Z>(&positionOculus[2], &positionOculus[1], &positionOculus[0]);
   positionOculus[3] = -ts.HeadPose.ThePose.Position.z;

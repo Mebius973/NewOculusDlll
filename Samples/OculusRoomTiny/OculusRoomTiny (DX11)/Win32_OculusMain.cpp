@@ -16,49 +16,18 @@ ovrHmd	hmd;
 // Create the eye render texture set */
 OculusTexture  * pEyeRenderTexture[2];
 
-// required global variables
-// Create the camera
-Camera mainCam;
-
-// The following statement causes the dll to not be loaded
-// Scene roomScene;
 // Create the eye renderer
 ovrRecti         eyeRenderViewport[2];
 ovrEyeRenderDesc eyeRenderDesc[2];
 
-// Mirror image to display on the computer
-ovrTexture*          mirrorTexture;
 // Set the default visibility
 auto isVisible = false;
-bool Quit = false;
-int eyeGap = 8;
 Sizei idealSize;
 
 // This function is the main function automatically called by windows.
 int WINAPI WinMain(HINSTANCE hinst, HINSTANCE, LPSTR, int)
 {
   hInstance = hinst;
-  if (!Init())
-  {
-    hWnd = DIRECTX.Window;
-    // Processes messages and calls OnIdle() to do rendering.
-    while (!Quit)
-    {
-      MSG msg;
-      if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
-      {
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
-      }
-      else
-      {
-
-        // Keep sleeping when we're minimized.
-        if (IsIconic(hWnd)) Sleep(10);
-      }
-    }
-  }
-  Release();
   return 0;
 }
 
@@ -89,29 +58,16 @@ bool Init()
   VALIDATE( ovrHmd_ConfigureTracking(hmd, ovrTrackingCap_Orientation | ovrTrackingCap_MagYawCorrection | ovrTrackingCap_Position, 0) == ovrSuccess, "Failed to configure tracking.");
 
   // Make the eye render buffers (caution if actual size < requested due to HW limits).
-
-    idealSize.w = 1180;
-    idealSize.h = 1460;
-    pEyeRenderTexture[0]   = new OculusTexture(hmd, idealSize);
-    pEyeRenderTexture[1]   = new OculusTexture(hmd, idealSize);
-    eyeRenderViewport[0].Pos  = Vector2i(0, 0);
-    eyeRenderViewport[0].Size = idealSize;
-    eyeRenderViewport[1].Pos  = Vector2i(0, 0);
-    eyeRenderViewport[1].Size = idealSize;
-
-  // Create a mirror to see on the monitor.
-  mirrorTexture = nullptr;
-  D3D11_TEXTURE2D_DESC td = { };
-  td.Format           = DXGI_FORMAT_B8G8R8A8_UNORM;
-  td.Width            = DIRECTX.WinSize.w;
-  td.Height           = DIRECTX.WinSize.h;
-  td.Usage            = D3D11_USAGE_DEFAULT;
-  td.SampleDesc.Count = 1;
-  td.MipLevels        = 1;
-  ovrHmd_CreateMirrorTextureD3D11(hmd, DIRECTX.Device, &td, &mirrorTexture);
-
-  // Update camera
-  mainCam = Camera(Vector3f(0.0f, 1.6f, -5.0f), Matrix4f::RotationY(3.141f));
+  // We manually set the size of the image, otherwise in some cases we end up with some weird sizes causing the Oculus to crash
+  idealSize.w = 1180;
+  idealSize.h = 1460;
+  
+  for (auto eye = 0; eye <2; eye++)
+  {
+    pEyeRenderTexture[eye]   = new OculusTexture(hmd, idealSize);
+    eyeRenderViewport[eye].Pos  = Vector2i(0, 0);
+    eyeRenderViewport[eye].Size = idealSize;
+  }
 
   // Setup VR components, filling out description
   eyeRenderDesc[0] = ovrHmd_GetRenderDesc(hmd, ovrEye_Left, hmd->DefaultEyeFov[0]);
@@ -121,17 +77,9 @@ bool Init()
 }
 
 void ProcessAndRender(char* leftEyeImage, char* rightEyeImage)
-//void ProcessAndRender(char* data)
 {
-  // Create the room model
-  Scene roomScene;
-  AddHmdCameraControl(hmd, mainCam);
-
-  // Animate the cube
-  static float cubeClock = 0;
-  roomScene.Models[0]->Pos = Vector3f(9 * sin(cubeClock), 3, 9 * cos(cubeClock+=0.015f));
-
-  // Get both eye poses simultaneously, with IPD offset already included.
+  // Get both eye poses simultaneously, with IPD offset already included. 
+  // We actually need to keep this, otherwise the HMD orientates the image in a non desirable way.
   ovrPosef         EyeRenderPose[2];
   ovrVector3f      HmdToEyeViewOffset[2] = {eyeRenderDesc[0].HmdToEyeViewOffset, eyeRenderDesc[1].HmdToEyeViewOffset};
   auto ftiming  = ovrHmd_GetFrameTiming(hmd, 0);
@@ -141,16 +89,16 @@ void ProcessAndRender(char* leftEyeImage, char* rightEyeImage)
   if (isVisible)
   {
     // Render Scene to Eye Buffers
-   for (auto eye = 0; eye < 2; eye++)
-   {
+    for (auto eye = 0; eye < 2; eye++)
+    {
       // Increment to use next texture, just before writing
       pEyeRenderTexture[eye]->AdvanceToNextTexture();
 
-      // Clear and set up rendertarget
+      // Update the textureset's D3D11 texture
       auto texIndex = pEyeRenderTexture[eye]->TextureSet->CurrentIndex;
       auto tex = reinterpret_cast<ovrD3D11Texture*>(&pEyeRenderTexture[eye]->TextureSet->Textures[texIndex]);
       DIRECTX.Context->UpdateSubresource(tex->D3D11.pTexture, 0, NULL, (eye == 0 ? leftEyeImage : rightEyeImage), idealSize.w * 4, idealSize.w * idealSize.h * 4);
-   }
+    }
   }
 
   // Initialize our single full screen Fov layer.
@@ -173,7 +121,6 @@ void ProcessAndRender(char* leftEyeImage, char* rightEyeImage)
 
 void Release()
 {
-  ovrHmd_DestroyMirrorTexture(hmd, mirrorTexture);
   pEyeRenderTexture[0]->Release(hmd);
   pEyeRenderTexture[1]->Release(hmd);
   ovrHmd_Destroy(hmd);
