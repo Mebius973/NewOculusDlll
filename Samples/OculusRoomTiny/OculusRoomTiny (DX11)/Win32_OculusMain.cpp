@@ -53,6 +53,7 @@ bool Init()
 
   // Set HMD capabilities
   ovrHmd_SetEnabledCaps(hmd, ovrHmdCap_LowPersistence | ovrHmdCap_DynamicPrediction);
+  ovrHmd_SetBool(hmd, "QueueAheadEnabled", ovrTrue);
 
   // Start the sensor which informs of the Rift's pose and motion
   VALIDATE( ovrHmd_ConfigureTracking(hmd, ovrTrackingCap_Orientation | ovrTrackingCap_MagYawCorrection | ovrTrackingCap_Position, 0) == ovrSuccess, "Failed to configure tracking.");
